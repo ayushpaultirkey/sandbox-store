@@ -1,5 +1,6 @@
 import "./../../style/main.css";
 import H12 from "@library/h12";
+import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
 
 const { fs, path, electron, axios, express, http, directory, bundle } = window.plugin;
@@ -18,7 +19,7 @@ export default class Detail extends H12 {
         return <>
             <div class="w-full h-full p-8 px-10 space-y-4 flex flex-col">
 
-                <div class="flex flex-row space-x-2">
+                <div class="flex flex-row space-x-4">
                     <div class="w-24 h-24 bg-zinc-700 rounded-lg bg-cover bg-no-repeat bg-center" id="icon"></div>
                     <div class="flex flex-col space-y-1">
                         <label class="text-zinc-300 text-xl">{name}</label>
@@ -36,43 +37,54 @@ export default class Detail extends H12 {
     async appInstall() {
 
     }
-    async loadDetail({ url, branch }) {
-
-        const { description, icon } = this.element;
-
+    async loadIcon(url) {
         try {
 
-            const domain = "https://raw.githubusercontent.com/";
-            const repository = url.split("https://github.com/")[1];
+            const { icon } = this.element;
+            icon.style.backgroundImage = `url(${`${url}/favicon.png`})`;
 
-            const raw = `${domain}${repository}/${branch}`;
-            const readmeURL = `${raw}/README.md`;
-            const iconURL = `${raw}/favicon.png`;
+        }
+        catch(error) {
+            console.error(error);
+        }
+    }
+    async loadReadme(url) {
 
-            icon.style.backgroundImage = `url(${iconURL})`;
+        const { description } = this.element;
+        try {
 
-            const response = await fetch(readmeURL);
+            const response = await fetch(`${url}/README.md`);
             if(!response.ok) {
                 throw new Error("Unable to get README.md");
             }
 
             const data = await response.text();
-    
-            const renderer = {
+            marked.use({
                 image: (token) => {
-                    return `<img src="${ `${raw}/${token.href}` }"/>`;
+                    return `<img src="${ `${url}/${token.href}` }"/>`;
                 }
-            }
-            marked.use({ renderer });
-
+            });
             description.innerHTML = marked.parse(data);
 
         }
         catch(error) {
-            description.innerText = "Unable to load";
+            description.innerText = "Unable to load readme";
             console.error(error);
         }
 
+    }
+    async loadDetail({ url, branch }) {
+        try {
+
+            const raw = urlparse.giturl(url, branch);
+            
+            await this.loadIcon(raw, branch);
+            await this.loadReadme(raw, branch);
+
+        }
+        catch(error) {
+            console.error(error);
+        }
     }
     async onAppSelected(e, data) {
         if(data) {

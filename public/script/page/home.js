@@ -1,5 +1,6 @@
 import "./../../style/main.css";
 import H12 from "@library/h12";
+import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
 import Card from "../component/card";
 
@@ -23,7 +24,7 @@ export default class Home extends H12 {
                     <input type="text" placeholder="Search..." class="bg-transparent p-2 px-4 pr-0 w-full" />
                     <button class="px-4 fa fa-search hover:text-blue-500"></button>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-4 text-zinc-400">
                     {app.list}
                 </div>
             </div>
@@ -32,14 +33,19 @@ export default class Home extends H12 {
     async getApp() {
         try {
 
-            const { status, data } = await axios.get("http://localhost:2000/api/app.json");
+            this.set("{app.list}", <><i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i></>);
+
+            const { status, data } = await axios.get("https://script.google.com/macros/s/AKfycbzn9Q0sc7hZ-JQFwLIRJnUG5q--HRNpFPKXaSTxAIN6_ONHdDm9shdgAyzbQcFdCSXd7Q/exec?name=store");
             if(status !== 200) {
                 throw new Error("Unable to get apps");
             }
 
+            this.set("{app.list}", "No app found");
+
             for(const item of data) {
+                const raw = urlparse.giturl(item.url, item.branch);
                 this.set("{app.list}++", <>
-                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.loadApp(item) } } />
+                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.loadApp(item) } } icon={ `${raw}/favicon.png` } />
                 </>);
             }
 
