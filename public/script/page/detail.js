@@ -19,7 +19,7 @@ export default class Detail extends H12 {
             <div class="w-full h-full p-8 px-10 space-y-4 flex flex-col">
 
                 <div class="flex flex-row space-x-2">
-                    <div class="w-24 h-24 bg-zinc-700 rounded-lg"></div>
+                    <div class="w-24 h-24 bg-zinc-700 rounded-lg bg-cover bg-no-repeat bg-center" id="icon"></div>
                     <div class="flex flex-col space-y-1">
                         <label class="text-zinc-300 text-xl">{name}</label>
                         <button class="bg-blue-500 text-xs p-1 px-6 rounded-md">Install</button>
@@ -37,6 +37,9 @@ export default class Detail extends H12 {
 
     }
     async loadDetail({ url, branch }) {
+
+        const { description, icon } = this.element;
+
         try {
 
             const domain = "https://raw.githubusercontent.com/";
@@ -44,6 +47,9 @@ export default class Detail extends H12 {
 
             const raw = `${domain}${repository}/${branch}`;
             const readmeURL = `${raw}/README.md`;
+            const iconURL = `${raw}/favicon.png`;
+
+            icon.style.backgroundImage = `url(${iconURL})`;
 
             const response = await fetch(readmeURL);
             if(!response.ok) {
@@ -52,7 +58,6 @@ export default class Detail extends H12 {
 
             const data = await response.text();
     
-            const { description } = this.element;
             const renderer = {
                 image: (token) => {
                     return `<img src="${ `${raw}/${token.href}` }"/>`;
@@ -64,8 +69,10 @@ export default class Detail extends H12 {
 
         }
         catch(error) {
+            description.innerText = "Unable to load";
             console.error(error);
         }
+
     }
     async onAppSelected(e, data) {
         if(data) {
