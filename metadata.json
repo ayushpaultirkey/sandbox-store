@@ -1,0 +1,24 @@
+{
+    "id": "default.store",
+    "name": "Store",
+    "author": "",
+    "description": "",
+    "version": "0.0.1",
+    "start": {
+        "main": "/dist/index.html",
+        "development": {
+            "enabled": true,
+            "port": 3000
+        }
+    },
+    "plugin": [
+        "@package",
+        "@directory",
+        "fs",
+        "path",
+        "electron",
+        "axios",
+        "express",
+        "http"
+    ]
+}
