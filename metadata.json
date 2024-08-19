@@ -1,9 +1,10 @@
 {
-    "id": "default.store",
+    "id": "sandbox-store",
     "name": "Store",
     "author": "",
     "description": "",
     "version": "0.0.1",
+    "release": "",
     "start": {
         "main": "/dist/index.html",
         "development": {
