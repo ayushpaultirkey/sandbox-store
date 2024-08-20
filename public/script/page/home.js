@@ -1,4 +1,4 @@
-import "./../../style/main.css";
+import "@style/main.css";
 import H12 from "@library/h12";
 import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
@@ -13,7 +13,7 @@ export default class Home extends H12 {
     }
     async init() {
 
-        this.getApp();
+        this.getPackages();
 
     }
     async render() {
@@ -29,7 +29,7 @@ export default class Home extends H12 {
                         onkeypress={
                             (e) => {
                                 if(e.key === "Enter") {
-                                    this.getApp(this.element.searchBox.value);
+                                    this.getPackages(this.element.searchBox.value);
                                 }
                             }
                         } />
@@ -37,7 +37,7 @@ export default class Home extends H12 {
                         class="px-4 fa fa-search hover:text-blue-500"
                         onclick={
                             () => {
-                                this.getApp(this.element.searchBox.value);
+                                this.getPackages(this.element.searchBox.value);
                             }
                         } >
                     </button>
@@ -48,10 +48,12 @@ export default class Home extends H12 {
             </div>
         </>;
     }
-    async getApp(name) {
+    async getPackages(name) {
         try {
 
-            this.set("{app.list}", <><i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i></>);
+            this.set("{app.list}", <>
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i>
+            </>);
 
             const queryName = (name) ? `?name=${name}` : "";
             
@@ -66,7 +68,7 @@ export default class Home extends H12 {
             for(const item of data) {
                 const raw = urlparse.giturl(item.url, item.branch);
                 this.set("{app.list}++", <>
-                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.loadApp(item) } } icon={ `${raw}/favicon.png` } />
+                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.loadPackage(item) } } icon={ `${raw}/favicon.png` } />
                 </>);
             }
 
@@ -75,7 +77,16 @@ export default class Home extends H12 {
             console.error(error);
         }
     }
-    loadApp(item) {
-        dispatcher.call("OnAppSelected", item);
+    loadPackage(item) {
+        if(item) {
+            dispatcher.call("onPackageSelected", {
+                id: item.id,
+                name: item.name,
+                repository: {
+                    url: item.url,
+                    branch: item.branch,
+                }
+            });
+        }
     }
 }
