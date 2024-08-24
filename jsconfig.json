@@ -3,6 +3,7 @@
         "paths": {
             "@library/*": ["./public/library/*"],
             "@style/*": ["./public/style/*"],
+            "@image/*": ["./public/image/*"],
         }
     }
 }

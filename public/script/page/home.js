@@ -4,8 +4,6 @@ import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
 import Card from "../component/card";
 
-const { fs, path, electron, axios, express, http, directory, bundle } = plugin;
-
 @Component
 export default class Home extends H12 {
     constructor() {
@@ -23,9 +21,9 @@ export default class Home extends H12 {
                 <div class="bg-zinc-300 text-xs rounded-md flex flex-row shadow-lg shadow-zinc-700">
                     <input 
                         type="text"
+                        id="searchBox"
                         placeholder="Search..."
                         class="bg-transparent p-2 px-4 pr-0 w-full"
-                        id="searchBox"
                         onkeypress={
                             (e) => {
                                 if(e.key === "Enter") {
@@ -43,7 +41,7 @@ export default class Home extends H12 {
                     </button>
                 </div>
                 <div class="space-y-4 text-zinc-400">
-                    {app.list}
+                    {list}
                 </div>
             </div>
         </>;
@@ -51,24 +49,24 @@ export default class Home extends H12 {
     async getPackages(name) {
         try {
 
-            this.set("{app.list}", <>
+            this.set("{list}", <>
                 <i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i>
             </>);
 
-            const queryName = (name) ? `?name=${name}` : "";
+            const query = (name) ? `?name=${name}` : "";
             
-            const response = await fetch(`https://script.google.com/macros/s/AKfycbzn9Q0sc7hZ-JQFwLIRJnUG5q--HRNpFPKXaSTxAIN6_ONHdDm9shdgAyzbQcFdCSXd7Q/exec${queryName}`);
+            const response = await fetch(`https://script.google.com/macros/s/AKfycbzn9Q0sc7hZ-JQFwLIRJnUG5q--HRNpFPKXaSTxAIN6_ONHdDm9shdgAyzbQcFdCSXd7Q/exec${query}`);
             if(!response.ok) {
                 throw new Error("Unable to get README.md");
             }
             
-            this.set("{app.list}", "No app found");
+            this.set("{list}", "No app found");
 
             const data = await response.json();
             for(const item of data) {
                 const raw = urlparse.giturl(item.url, item.branch);
-                this.set("{app.list}++", <>
-                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.loadPackage(item) } } icon={ `${raw}/favicon.png` } />
+                this.set("{list}++", <>
+                    <Card args name={ item.name } description={ item.description } onclick={ () => { this.selectPackage(item) } } icon={ `${raw}/favicon.png` } />
                 </>);
             }
 
@@ -77,7 +75,7 @@ export default class Home extends H12 {
             console.error(error);
         }
     }
-    loadPackage(item) {
+    selectPackage(item) {
         if(item) {
             dispatcher.call("onPackageSelected", {
                 id: item.id,

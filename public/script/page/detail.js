@@ -3,20 +3,20 @@ import H12 from "@library/h12";
 import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
 
-const { fs, path, electron, axios, express, http, directory, bundle } = window.plugin;
+const { manager } = window.plugin;
 
 @Component
 export default class Detail extends H12 {
     constructor() {
         super();
         this.packageData = null;
-        this.downloadURL = null;
+        this.packageDownloadURL = null;
     }
     async init() {
 
         this.set("{i.size}", "");
-        this.set("{i.version}", "");
         this.set("{i.publish}", "");
+        this.set("{i.download}", "");
         this.set("{i.install}", "Install");
 
         dispatcher.on("onPackageSelected", this.onPackageSelected.bind(this));
@@ -30,7 +30,8 @@ export default class Detail extends H12 {
                     <div class="w-24 h-24 bg-zinc-700 rounded-lg bg-cover bg-no-repeat bg-center" id="icon"></div>
                     <div class="flex flex-col space-y-1">
                         <label class="text-zinc-300 text-xl">{name}</label>
-                        <button class="bg-blue-500 hover:bg-blue-600 text-xs p-1 px-6 rounded-md font-semibold" onclick={ this.installApp } disabled id="installButton"><i class="fa fa-download mr-2"></i>{i.install} {i.version}</button>
+                        <button class="bg-blue-500 hover:bg-blue-600 text-xs p-1 px-6 rounded-md font-semibold" onclick={ this.install } disabled id="installButton"><i class="fa fa-download mr-2"></i>{i.install}</button>
+                        <label class="text-zinc-500 text-xs"><b>Downloads: </b>{i.download}</label>
                         <label class="text-zinc-500 text-xs"><b>Published: </b>{i.publish}</label>
                         <label class="text-zinc-500 text-xs"><b>Size: </b>{i.size}</label>
                     </div>
@@ -43,19 +44,19 @@ export default class Detail extends H12 {
             </div>
         </>;
     }
-    async installApp() {
+    async install() {
 
         const { installButton } = this.element;
         installButton.setAttribute("disabled", true);
 
         try {
-            if(this.downloadURL && this.packageData) {
+            if(this.packageDownloadURL && this.packageData) {
 
                 this.set("{i.install}", "Installing");
     
-                await bundle.install(this.downloadURL, {});
+                await manager.package.install(this.packageDownloadURL, {});
     
-                const installed = await bundle.getInstalled();
+                const installed = await manager.package.getInstalled();
                 this.set("{i.install}", (installed[this.packageData.id]) ? "Installed" : "Install");
     
             }
@@ -78,12 +79,12 @@ export default class Detail extends H12 {
 
             const { name, assets } = await response.json();
             const { download_count, size, created_at, browser_download_url } = assets[0];
-            
-            this.set("{i.version}", name);
+
+            this.set("{i.download}", download_count);
             this.set("{i.publish}", created_at.split("T")[0]);
             this.set("{i.size}", `${(size / 1000).toFixed(2)} KB`);
             
-            this.downloadURL = browser_download_url;
+            this.packageDownloadURL = browser_download_url;
 
             const { installButton } = this.element;
             installButton.removeAttribute("disabled");
@@ -158,13 +159,13 @@ export default class Detail extends H12 {
             description.innerHTML = "";
 
             this.set("{i.size}", "");
-            this.set("{i.version}", "");
             this.set("{i.publish}", "");
-
+            this.set("{i.download}", "");
             this.set("{name}", name);
-            this.loadDetail(url, branch);
 
-            const installed = await bundle.getInstalled();
+            await this.loadDetail(url, branch);
+
+            const installed = await manager.package.getInstalled();
             this.set("{i.install}", (installed[id]) ? "Installed" : "Install");
 
         }

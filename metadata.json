@@ -1,9 +1,9 @@
 {
     "id": "sandbox-store",
     "name": "Store",
-    "author": "",
+    "author": "ayushpaultirkey",
     "description": "",
-    "version": "0.0.1",
+    "version": "1.0",
     "start": {
         "main": "/dist/index.html",
         "development": {
@@ -12,14 +12,7 @@
         }
     },
     "plugins": [
-        "@package",
-        "@directory",
-        "fs",
-        "path",
-        "electron",
-        "axios",
-        "express",
-        "http"
+        "manager"
     ],
     "repository": {
         "url": "https://github.com/ayushpaultirkey/sandbox-store",

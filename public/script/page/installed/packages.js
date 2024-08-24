@@ -1,10 +1,9 @@
 import "@style/main.css";
 import H12 from "@library/h12";
-import urlparse from "@library/urlparse";
 import dispatcher from "@library/dispatcher";
-import Card from "../component/card";
+import Card from "../../component/card";
 
-const { fs, path, electron, axios, express, http, directory, bundle } = plugin;
+const { manager } = plugin;
 
 @Component
 export default class Installed extends H12 {
@@ -13,37 +12,37 @@ export default class Installed extends H12 {
     }
     async init() {
 
-        this.getApp();
+        this.getPackages();
 
     }
     async render() {
         return <>
             <div class="w-full h-full p-8 px-10 space-y-4">
-                <label class="text-2xl text-zinc-300">Installed</label>
+                <label class="text-2xl text-zinc-300">Installed Packages</label>
                 <div class="space-y-4 text-zinc-400">
-                    {app.list}
+                    {list}
                 </div>
             </div>
         </>;
     }
-    async getApp() {
+    async getPackages() {
 
         try {
 
-            this.set("{app.list}", <><i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i></>);
+            this.set("{list}", <><i class="fa-solid fa-circle-notch fa-spin text-2xl text-zinc-400"></i></>);
 
-            const data = await bundle.getInstalled();
+            const data = await manager.package.getInstalled();
             
-            this.set("{app.list}", "No app found");
+            this.set("{list}", "No app found");
 
             for(const item in data) {
 
                 const { id, name } = data[item];
-                const icon = await bundle.getInstalledIcon(id);
-                const meta = await bundle.getInstalledMetadata(id);
+                const icon = await manager.package.getInstalledIcon(id);
+                const meta = await manager.package.getInstalledMetadata(id);
 
-                this.set("{app.list}++", <>
-                    <Card args name={ name } description={ "" } onclick={ () => { this.loadPackage(meta) } } icon={ icon } />
+                this.set("{list}++", <>
+                    <Card args name={ name } onclick={ () => { this.selectPackage(meta) } } icon={ icon } />
                 </>);
 
             }
@@ -54,7 +53,7 @@ export default class Installed extends H12 {
         }
 
     }
-    loadPackage(item) {
+    selectPackage(item) {
 
         dispatcher.call("onPackageSelected", {
             id: item.id,
